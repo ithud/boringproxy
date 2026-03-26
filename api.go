@@ -127,6 +127,19 @@ func (a *Api) handleTunnels(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(500)
 			w.Write([]byte(err.Error()))
 		}
+	case "PUT":
+		if tokenData.Client != "" {
+			w.WriteHeader(403)
+			io.WriteString(w, "Token cannot be used to update tunnels")
+			return
+		}
+
+		r.ParseForm()
+		_, err := a.UpdateTunnelPassword(tokenData, r.Form)
+		if err != nil {
+			w.WriteHeader(500)
+			w.Write([]byte(err.Error()))
+		}
 	default:
 		w.WriteHeader(405)
 		w.Write([]byte("Invalid method for /tunnels"))
@@ -445,6 +458,37 @@ func (a *Api) DeleteTunnel(tokenData TokenData, params url.Values) error {
 	a.tunMan.DeleteTunnel(domain)
 
 	return nil
+}
+
+func (a *Api) UpdateTunnelPassword(tokenData TokenData, params url.Values) (Tunnel, error) {
+
+	domain := params.Get("domain")
+	if domain == "" {
+		return Tunnel{}, errors.New("Invalid domain parameter")
+	}
+
+	tun, exists := a.db.GetTunnel(domain)
+	if !exists {
+		return Tunnel{}, errors.New("Tunnel doesn't exist")
+	}
+
+	if tokenData.Owner != tun.Owner {
+		user, _ := a.db.GetUser(tokenData.Owner)
+		if !user.IsAdmin {
+			return Tunnel{}, errors.New("Unauthorized")
+		}
+	}
+
+	password := params.Get("password")
+	if password == "" {
+		return Tunnel{}, errors.New("Password required")
+	}
+
+	tun.AuthPassword = password
+
+	a.db.SetTunnel(domain, tun)
+
+	return tun, nil
 }
 
 func (a *Api) CreateToken(tokenData TokenData, params url.Values) (string, error) {
