@@ -52,7 +52,7 @@ func (a *Api) handleTunnels(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Not authorized"))
 		return
 	}
-
+	fmt.Println("method ", r.Method)
 	switch r.Method {
 	case "GET":
 		query := r.URL.Query()
