@@ -187,7 +187,7 @@ func (c *Client) PollTunnels(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-
+	listenReq.Header.Set("Accept-Encoding", "identity")
 	if len(c.token) > 0 {
 		listenReq.Header.Add("Authorization", "bearer "+c.token)
 	}
@@ -297,6 +297,7 @@ func (c *Client) BoreTunnel(ctx context.Context, tunnel Tunnel) error {
 	}
 
 	sshHost := fmt.Sprintf("%s:%d", tunnel.ServerAddress, tunnel.ServerPort)
+	fmt.Println("sshHost", sshHost, "port", tunnel.ServerPort)
 	client, err := ssh.Dial("tcp", sshHost, config)
 	if err != nil {
 		return fmt.Errorf("Failed to dial: %v", err)
@@ -308,6 +309,7 @@ func (c *Client) BoreTunnel(ctx context.Context, tunnel Tunnel) error {
 		bindAddr = "0.0.0.0"
 	}
 	tunnelAddr := fmt.Sprintf("%s:%d", bindAddr, tunnel.TunnelPort)
+	fmt.Println("tunnelAddr", tunnelAddr, "port", tunnel.TunnelPort)
 	listener, err := client.Listen("tcp", tunnelAddr)
 	if err != nil {
 		return fmt.Errorf("Unable to register tcp forward for %s:%d %v", bindAddr, tunnel.TunnelPort, err)

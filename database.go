@@ -60,6 +60,8 @@ type Tunnel struct {
 	ClientName   string `json:"client_name"`
 	AuthUsername string `json:"auth_username"`
 	AuthPassword string `json:"auth_password"`
+
+	Host string `json:"host"`
 }
 
 func NewDatabase(path string) (*Database, error) {
