@@ -81,6 +81,7 @@ func (a *Api) handleTunnels(w http.ResponseWriter, r *http.Request) {
 					delete(tunnels, k)
 				} else {
 					tun.ServerPort = a.config.SshServerPort
+					tun.Host = a.config.PublicIp
 					tunnels[k] = tun
 				}
 			}
